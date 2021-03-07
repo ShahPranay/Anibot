@@ -1,47 +1,40 @@
 import os
-import discord
+from discord import Member
+from typing import Optional
 import random
+from discord.ext import commands
+from discord.ext.commands import BadArgument
 
-intents = discord.Intents.default()
-intents.members = True
+#intents = discord.Intents.default()
+#intents.members = True
 from dotenv import load_dotenv
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
-client = discord.Client(intents=intents)
+#client = discord.Client(intents=intents)
+bot= commands.Bot(command_prefix="!")
 
-@client.event
-async def on_ready():
-    print(f'{client.user} has connected to discord!')
-    guild = discord.utils.get(client.guilds, name=GUILD)
-    print(
-        f'{client.user} is connected to the following guilds:\n'
-        f'{guild.name}(id: {guild.id})\n'
-    )
-    members='\n -'.join([member.name for member in guild.members])
-    print(
-        f'guild members:\n {members}'
-    )
-@client.event
-async def on_member_join(member):
-    await member.create_dm()
-    await member.dm_channel.send(
-        f'Hi {member.name}, welcome to my Discord server!'
-    )
-@client.event
-async def on_error(event, *args, **kwargs):
-    with open('err.log', 'a') as f:
-        if event == 'on_message':
-            f.write(f'Unhandled message: {args[0]}\n')
-        else:
-            raise
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    if 'happy birthday' in message.content.lower():
-        await message.channel.send('Happy Birthday!!!🎈🎉')
+@bot.command(name='99',help='Responds with a random quote from Brooklyn 99')
+async def nine_nine(ctx):
+    brooklyn_99_quotes = [
+        'I\'m the human form of the 💯 emoji.',
+        'Bingpot!',
+        (
+            'Cool. Cool cool cool cool cool cool cool, '
+            'no doubt no doubt no doubt no doubt.'
+        )
+    ]
 
-client.run(TOKEN)
+    response = random.choice(brooklyn_99_quotes)
+    await ctx.send(response)
+@bot.command(name='slap', aliases=['hit'],help='slaps person tagged for added reason(optional)')
+async def slap_member(ctx, member: Member, *, reason: Optional[str]="for no reason"):
+    await ctx.send(f"{ctx.author.display_name} slapped {member.mention} {reason}!")
+@slap_member.error
+async def slap_member_error(ctx,exc):
+    if isinstance(exc, BadArgument):
+        await ctx.send("I can't find that member.")
+
+bot.run(TOKEN)

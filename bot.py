@@ -3,6 +3,7 @@ from discord import Member,Embed,ext
 from typing import Optional
 import random
 import requests
+import re
 
 from discord.ext import commands
 from discord.ext.commands import BadArgument
@@ -198,7 +199,15 @@ async def manga_title(ctx, *,name):
             taglst.append(item["name"])
     if(not len(taglst)==0):
         embedVar.add_field(name="Tags:", value=", ".join(taglst), inline=False)
-
+    readurl="https://manganelo.com/search/story/"
+    if(data["data"]["Media"]["title"]["english"] is not None): 
+        urlname=data["data"]["Media"]["title"]["english"]
+    else:
+        urlname=data["data"]["Media"]["title"]["romaji"]
+    urlname=re.split("'| ",urlname)
+    urlname="_".join(urlname)
+    readurl+=urlname
+    embedVar.add_field(name="Stream From:",value=readurl, inline=False)
     await ctx.send(embed=embedVar)
 
 
